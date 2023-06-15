@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>CRUD Ejemplo</title>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script>
+    // Función para obtener todos los ejemplos
+    function obtenerEjemplos() {
+      $.ajax({
+        url: '/ejemplo',
+        type: 'GET',
+        success: function(data) {
+          var tabla = '<table>';
+          tabla += '<tr><th>Nombre</th><th>Edad</th><th>Acciones</th></tr>';
+          data.forEach(function(ejemplo) {
+            tabla += '<tr data-id="' + ejemplo._id + '">';
+            tabla += '<td>' + ejemplo.nombre + '</td>';
+            tabla += '<td>' + ejemplo.edad + '</td>';
+            tabla += '<td><button onclick="editarEjemplo(\'' + ejemplo._id + '\')">Editar</button>';
+            tabla += '<button onclick="eliminarEjemplo(\'' + ejemplo._id + '\')">Eliminar</button></td>';
+            tabla += '</tr>';
+          });
+          tabla += '</table>';
+          $('#tablaEjemplos').html(tabla);
+        }
+      });
+    }
+
+    // Función para crear un nuevo ejemplo
+    function crearEjemplo() {
+      var nombre = $('#nombre').val();
+      var edad = $('#edad').val();
+      $.ajax({
+        url: '/ejemplo',
+        type: 'POST',
+        data: JSON.stringify({ nombre: nombre, edad: edad }),
+        contentType: 'application/json',
+        success: function(data) {
+          obtenerEjemplos();
+          $('#nombre').val('');
+          $('#edad').val('');
+        }
+      });
+    }
+
+    // Función para editar un ejemplo
+    function editarEjemplo(id) {
+      $.ajax({
+        url: '/ejemplo/' + id,
+        type: 'GET',
+        success: function(data) {
+          var formulario = '<form id="formularioEditar">';
+          formulario += '<label for="nombreEditar">Nombre:</label>';
+          formulario += '<input type="text" id="nombreEditar" name="nombreEditar" value="' + data.nombre + '">';
+          formulario += '<label for="edadEditar">Edad:</label>';
+          formulario += '<input type="number" id="edadEditar" name="edadEditar" value="' + data.edad + '">';
+          formulario += '<button onclick="guardarCambios(\'' + id + '\')">Guardar</button>';
+          formulario += '</form>';
+
+          $('tr[data-id="' + id + '"]').html('<td colspan="3">' + formulario + '</td>');
+        }
+      });
+    }
+
+    // Función para guardar los cambios de un ejemplo editado
+    function guardarCambios(id) {
+      var nombre = $('#nombreEditar').val();
+      var edad = $('#edadEditar').val();
+      $.ajax({
+        url: '/ejemplo/' + id,
+        type: 'PUT',
+        data: JSON.stringify({ nombre: nombre, edad: edad }),
+        contentType: 'application/json',
+        success: function(data) {
+          obtenerEjemplos();
+        }
+      });
+    }
+
+    // Función para eliminar un ejemplo
+    function eliminarEjemplo(id) {
+      $.ajax({
+        url: '/ejemplo/' + id,
+        type: 'DELETE',
+        success: function(data) {
+          obtenerEjemplos();
+        }
+      });
+    }
+
+    // Función que se ejecuta al cargar la página
+    $(document).ready(function() {
+      obtenerEjemplos();
+      });
+      </script>
+      
+      </head>
+      <body>
+        <h1>Ejemplo CRUD</h1>
+        <h2>Crear nuevo ejemplo</h2>
+        <label for="nombre">Nombre:</label>
+        <input type="text" id="nombre" name="nombre">
+        <label for="edad">Edad:</label>
+        <input type="number" id="edad" name="edad">
+        <button onclick="crearEjemplo()">Crear</button>
+        <h2>Ejemplos</h2>
+        <div id="tablaEjemplos"></div>
+      </body>
+      </html>
+
